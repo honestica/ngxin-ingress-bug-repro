@@ -35,5 +35,8 @@ sleep 2
 kubectl scale --replicas=1 deployment/release-name-lfapp-web
 sleep 2
 kubectl scale --replicas=5 deployment/release-name-lfapp-web
+sleep 10
+kubectl scale --replicas=1 deployment/release-name-lfapp-web
 sleep 20
+
 kubectl logs --tail 800 -lapp=nginx-ingress -n ingress

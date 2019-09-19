@@ -1,0 +1,111 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-lfapp
+  labels:
+    app: lifen-app-web
+    release: release-name
+spec:
+  type: "ClusterIP"
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: lifen-app-web
+    release: release-name
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: release-name-lfapp-web
+  labels:
+    app: lifen-app-web
+    release: release-name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lifen-app-web
+      release: release-name
+  template:
+    metadata:
+      labels:
+        app: lifen-app-web
+        release: release-name   
+    spec:
+      imagePullSecrets:
+        - name: lifen-dockerhub
+      containers:
+        - name: release-name-lfapp-web
+          image: googlecontainer/echoserver:1.10
+          imagePullPolicy: IfNotPresent
+          terminationMessagePolicy: FallbackToLogsOnError
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 5
+            failureThreshold: 30
+            httpGet:
+              path: /status
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 5
+            failureThreshold: 30
+            httpGet:
+              path: /status
+              port: http
+          resources:
+            limits:
+              cpu: 250m
+              memory: 512Mi
+            requests:
+              cpu: 25m
+              memory: 256Mi
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: release-name-lfapp-public-v2-deny
+  labels:
+    app: lifen-app-web
+    release: release-name
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/whitelist-source-range: "127.0.0.1"
+spec:
+  tls:
+  rules:
+    - host: echoserver.public.test.lifen.minikube
+      http:
+        paths:
+          - path: /admin
+            backend:
+              serviceName: release-name-lfapp
+              servicePort: http
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: release-name-lfapp-public-v2
+  labels:
+    app: lifen-app-web
+    release: release-name
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+  rules:
+    - host: echoserver.public.test.lifen.minikube
+      http:
+        paths:
+          - path: /api/
+            backend:
+              serviceName: release-name-lfapp
+              servicePort: http

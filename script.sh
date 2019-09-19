@@ -2,7 +2,7 @@ set -x
 
 helm init --upgrade --wait
 
-helm upgrade nginx-ingress --set controller.extraArgs.v=2 --set controller.ingressClass=nginx --set controller.service.enableHttps=false stable/nginx-ingress --install --kube-context minikube --namespace ingress
+helm upgrade nginx-ingress --set controller.extraArgs.v=2 --set controller.ingressClass=nginx --set controller.service.enableHttps=false ./nginx-ingress --install --kube-context minikube --namespace ingress
 
 sleep 30
 

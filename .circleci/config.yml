@@ -47,7 +47,7 @@ jobs:
       - run:
           name: Test the bug
           command: |
-            ./scripts.sh
+            ./script.sh
 
 workflows:
   version: 2
